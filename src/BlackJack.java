@@ -7,6 +7,7 @@ import java.util.Random;
 public class BlackJack {
     private static final Random RANDOM = new Random();
     private static final Scanner STDIN = new Scanner(System.in);
+    private static boolean isSelectDrow = true;
     private static enum Players {
         Player("あなた"), Dealer("ディーラー");
         private String name;
@@ -52,28 +53,28 @@ public class BlackJack {
     private static final String WIN_MESSAGE = "%sの勝ちです";
     private static final String LOSE_MESSAGE = "%sの負けです";
     private static final String DRAW_MESSAGE = "引き分けです";
+    private static final String NOTCORRECTCOMMAND_MESSAGE = "入力が正しくありません";
 
     public static void main(String[] args) {
         firstDrow(dealersHandList,playersHandList);
-        Boolean isSelectDrow = true;
-        while(isNotFinish(dealersHandList,isSelectDrow)){
-            playRound(isSelectDrow);
+        while(isNotFinish(dealersHandList)){
+            playRound();
         };
         showResult();
     }
 
-    private static Boolean isNotFinish(List<Integer> dealersHandList,Boolean isSelectDrow){
-        if(isNotOver(DROWBORDER,dealersHandList) || isCanDrow(isSelectDrow,playersHandList)){
+    private static boolean isNotFinish(List<Integer> dealersHandList){
+        if(isNotOver(DROWBORDER,dealersHandList) || isCanDrow(playersHandList)){
             return true;
         }
         return false;
     }
 
-    private static boolean isCanDrow(Boolean isSelectDraw,List<Integer> playersHandList){
+    private static boolean isCanDrow(List<Integer> playersHandList){
         if(isBurst(playersHandList)){
             return false;
         }
-        if(!isSelectDraw){
+        if(!isSelectDrow){
             return false; 
         }
         return true;
@@ -86,9 +87,9 @@ public class BlackJack {
         }
     }
 
-    private static void playRound(Boolean isSelectDrow) {
+    private static void playRound() {
         dealerTurn(Players.Dealer,dealersHandList);
-        playerTurn(Players.Player,playersHandList,isSelectDrow);
+        playerTurn(Players.Player,playersHandList);
     }
 
     private static void dealCard(Players player,List<Integer> handList){
@@ -107,13 +108,13 @@ public class BlackJack {
         dealCard(dealer,handList);
     }
 
-    private static void playerTurn(Players player,List<Integer> handList,Boolean isSelectDrow){
+    private static void playerTurn(Players player,List<Integer> handList){
         turnStartMessage(player);
         showSumMessage(player,handList);
         if(isBurst(handList)){
             return;
         }
-        drowQuestuon(isSelectDrow);
+        drowQuestion();
         if(!isSelectDrow){
             showNotDrowMessage(player);
             return;
@@ -146,7 +147,7 @@ public class BlackJack {
         return sum;
     }
 
-    private static Boolean drowQuestuon(Boolean isSelectDrow){
+    private static void drowQuestion(){
         showDROWQUESTION_MESSAGE();
         String inputCommand = receiveYorN();
         if(inputCommand.equals(YESKEY)){
@@ -155,13 +156,13 @@ public class BlackJack {
         if(inputCommand.equals(NOKEY)){
             isSelectDrow = false;
         }
-        return isSelectDrow;
     }
 
     private static String receiveYorN() {
         String inputStr;
         inputStr = STDIN.nextLine();
         if (!isCorrectCommand(inputStr)) {
+            showNotCorrectCommandMessagee();
             return receiveYorN();
         }
         return inputStr;
@@ -176,6 +177,10 @@ public class BlackJack {
 
     private static void showDealCardMessage(Players player,String card) {
         System.out.println(String.format(DEALCARD_MESSAGE,player.getName(),card));
+    }
+
+    private static void showNotCorrectCommandMessagee() {
+        System.out.println(NOTCORRECTCOMMAND_MESSAGE);
     }
 
     private static void showNotDrowMessage(Players player) {
@@ -231,6 +236,9 @@ public class BlackJack {
     private static boolean isWin(){
         if(isBurst(playersHandList)){
             return false;
+        }
+        if(isBurst(dealersHandList)){
+            return true;
         }
         if(getSum(playersHandList) > getSum(dealersHandList)){
             return true;
